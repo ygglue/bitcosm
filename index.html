@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Microcosm — M0 Sim Core Proof</title>
+    <style>
+      body { margin: 0; background: #0b0f0c; color: #cfe; font-family: monospace; }
+      #wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px; }
+      canvas { image-rendering: pixelated; width: 640px; height: 480px; border: 1px solid #243; }
+      #stats { font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <div id="wrap">
+      <canvas id="world" width="160" height="120"></canvas>
+      <div id="stats">starting…</div>
+    </div>
+    <script type="module" src="/src/viewer/main.ts"></script>
+  </body>
+</html>
