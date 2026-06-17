@@ -33,4 +33,9 @@ export class StrainRegistry {
   all(): StrainInfo[] {
     return [...this.strains];
   }
+
+  restore(strains: StrainInfo[], activeId: number | null): void {
+    this.strains = strains.map((s) => ({ id: s.id, color: s.color }));
+    this.active = activeId === null ? null : (this.get(activeId) ?? null);
+  }
 }
