@@ -90,3 +90,24 @@ test('stats panel shows the live tick', async ({ page }) => {
     return !!el && Number(el.textContent) > 10;
   }, { timeout: 10_000 });
 });
+
+test('save then reload then load restores the world', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForFunction(() => {
+    const w = window as unknown as { __bitcosm?: { stats: () => { tick: number } } };
+    return !!w.__bitcosm && w.__bitcosm.stats().tick > 20;
+  }, { timeout: 10_000 });
+
+  // Pause so the saved tick is stable, then save to slot-1.
+  await page.locator('[data-action="toggle-pause"]').click();
+  const savedTick = await page.evaluate(() => (window as any).__bitcosm.stats().tick);
+  await page.locator('[data-save="slot-1"]').click();
+
+  // Reload the page (fresh world at tick 0-ish) and load slot-1.
+  await page.reload();
+  await page.waitForFunction(() => !!(window as unknown as { __bitcosm?: unknown }).__bitcosm, { timeout: 10_000 });
+  await page.locator('[data-load="slot-1"]').click();
+
+  const loadedTick = await page.evaluate(() => (window as any).__bitcosm.stats().tick);
+  expect(loadedTick).toBe(savedTick);
+});
