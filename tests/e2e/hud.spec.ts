@@ -23,3 +23,42 @@ test('controller boots, exposes stats, and the world evolves', async ({ page }) 
   });
   expect(newId).toBeGreaterThan(5); // 5 founders already exist
 });
+
+test('seeding a new strain by clicking the canvas grows its population', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForFunction(() => {
+    const w = window as unknown as { __bitcosm?: { stats: () => { population: number } } };
+    return !!w.__bitcosm && w.__bitcosm.stats().population > 0;
+  }, { timeout: 10_000 });
+
+  // Create a fresh strain and select the Seed tool.
+  await page.locator('[data-action="new-strain"]').click();
+  await page.locator('[data-tool="seed"]').click();
+  const newId = await page.locator('[data-active-strain]').getAttribute('data-active-strain');
+  expect(newId).not.toBeNull();
+  const id = Number(newId);
+
+  // Click the centre of the canvas to seed a blob of the new strain.
+  const canvas = page.locator('#world');
+  const box = (await canvas.boundingBox())!;
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+
+  // The new strain now has members and they grow over the next ticks.
+  await page.waitForFunction((sid) => {
+    const w = window as unknown as { __bitcosm: { stats: () => { perStrain: Record<number, number> } } };
+    return (w.__bitcosm.stats().perStrain[sid] ?? 0) > 0;
+  }, id, { timeout: 10_000 });
+});
+
+test('an over-budget genome turns the budget meter red', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForSelector('[data-budget]');
+  // Drive every beneficial trait to the max via the designer sliders.
+  for (const key of ['spread', 'diet', 'resilience']) {
+    const slider = page.locator(`[data-trait="${key}"]`);
+    await slider.fill('1');
+  }
+  await page.locator('[data-trait="metabolism"]').fill('0');
+  await page.locator('[data-trait="reproThreshold"]').fill('0');
+  await expect(page.locator('[data-budget]')).toHaveClass(/over/);
+});
