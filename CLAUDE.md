@@ -13,9 +13,11 @@ server cost.
 
 ## Status
 
-**M0 (Sim Core proof) is shipped and merged to `main`.** The pure, deterministic simulation works
-and demonstrably evolves; a local Canvas2D viewer renders it. No server, accounts, or multiplayer
-yet — those are M1–M4.
+**M1 (single-player browser sandbox) is shipped and merged to `main`.** The pure deterministic
+Sim Core (M0) is driven by a framework-agnostic `Engine`, rendered with WebGL, and wrapped in a
+Svelte HUD: point-buy genome designer, god-mode tools (seed/food/cull/mutate), pan/zoom camera,
+pause/play/step/speed, and localStorage save/load with autosave. No server, accounts, or
+multiplayer yet — those are M2–M4.
 
 ## Commands
 
@@ -24,6 +26,7 @@ npm install        # first-time setup
 npm run dev        # Vite dev server → http://localhost:5173  (the playable viewer)
 npm test           # Vitest unit tests (sim core) — globs tests/sim/**
 npm run e2e        # Playwright browser smoke test (needs: npx playwright install chromium)
+npm run check      # svelte-check (type-check .svelte components)
 npm run build      # tsc --noEmit + vite build
 npx tsc --noEmit   # type-check only
 ```
@@ -37,7 +40,7 @@ rewriting the game around it.
 | Unit | Location | Responsibility |
 |------|----------|----------------|
 | **Sim Core** | `src/sim/` | Pure, deterministic simulation. Entry point `step(state, actions) → { state, events }`. No I/O. |
-| **Viewer** | `src/viewer/`, `index.html` | Canvas2D rendering + RAF loop driving the Sim Core. Client-only; never re-implements sim logic. |
+| **Client** | `src/ui/`, `src/render/`, `src/input/`, `src/engine/`, `src/main.ts`, `index.html` | Svelte HUD + WebGL renderer + camera/tools/engine driving the Sim Core. Client-only; never re-implements sim logic. |
 | **Server** | *(M2, not built)* | Authoritative fixed-tick loop, WebSocket viewport sync, snapshots. |
 | **Persistence** | *(M3, not built)* | Neon (Postgres), auth, object storage for world snapshots. |
 
@@ -80,10 +83,9 @@ To experiment: tweak `src/sim/constants.ts` (world balance) or the `founder` gen
 ## Roadmap
 
 - **M0 — Sim Core proof** ✅ shipped (pure deterministic sim + Canvas2D viewer + tests).
-- **M1 — Single-player browser:** point-buy genome UI + interventions (seed/mutate/drop food/cull),
-  likely WebGL rendering. ← **next**
+- **M1 — Single-player browser** ✅ shipped (point-buy genome UI + god-mode tools + WebGL + Svelte HUD + save/load).
 - **M2 — Authoritative server + multiplayer:** move sim server-side, WebSocket viewport sync,
-  one shared world.
+  one shared world. ← **next**
 - **M3 — Accounts & persistence:** auth, Neon-backed strains, snapshots, daily keep-alive/vitality.
 - **M4 — Monetization & polish:** Credits (strictly fair — cosmetics, strain slots, spore
   insurance, analytics/replays, season pass; **never** pay-for-power), polish.
