@@ -78,6 +78,7 @@ canvas.addEventListener('pointerup', (e) => {
   dragging = false;
   canvas.releasePointerCapture(e.pointerId);
 });
+canvas.addEventListener('pointercancel', () => { dragging = false; });
 canvas.addEventListener('pointermove', (e) => {
   if (!dragging) return;
   camera = clampCamera(
