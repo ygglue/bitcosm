@@ -25,7 +25,9 @@ export interface WorldState {
 
 export type Action =
   | { type: 'seed'; x: number; y: number; strainId: number; genome: Genome }
-  | { type: 'dropFood'; x: number; y: number; radius: number; amount: number };
+  | { type: 'dropFood'; x: number; y: number; radius: number; amount: number }
+  | { type: 'cull'; x: number; y: number; radius: number }
+  | { type: 'mutate'; x: number; y: number; radius: number };
 
 export interface SimEvent {
   type: 'birth' | 'death' | 'predation';

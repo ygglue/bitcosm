@@ -1,5 +1,7 @@
 import type { WorldState, Action } from './types';
 import { START_ENERGY, FOOD_MAX } from './constants';
+import { makeRng, type Rng } from './prng';
+import { mutate } from './genome';
 
 export function createWorld(width: number, height: number, seed: number, initialFood: number = FOOD_MAX): WorldState {
   const n = width * height;
@@ -29,6 +31,7 @@ export function neighbors(state: WorldState, index: number): number[] {
 }
 
 export function applyActions(state: WorldState, actions: Action[]): void {
+  let rng: Rng | null = null;
   for (const a of actions) {
     if (a.type === 'seed') {
       if (!inBounds(state, a.x, a.y)) continue;
@@ -38,8 +41,7 @@ export function applyActions(state: WorldState, actions: Action[]): void {
         genome: a.genome,
         actedTick: -1,
       };
-    } else {
-      // dropFood: Chebyshev radius
+    } else if (a.type === 'dropFood') {
       for (let dy = -a.radius; dy <= a.radius; dy++) {
         for (let dx = -a.radius; dx <= a.radius; dx++) {
           const x = a.x + dx;
@@ -50,8 +52,30 @@ export function applyActions(state: WorldState, actions: Action[]): void {
           state.food[i] = v > FOOD_MAX ? FOOD_MAX : v;
         }
       }
+    } else if (a.type === 'cull') {
+      for (let dy = -a.radius; dy <= a.radius; dy++) {
+        for (let dx = -a.radius; dx <= a.radius; dx++) {
+          const x = a.x + dx;
+          const y = a.y + dy;
+          if (!inBounds(state, x, y)) continue;
+          state.microbes[idx(state, x, y)] = null;
+        }
+      }
+    } else {
+      // mutate
+      if (!rng) rng = makeRng(state.rngState);
+      for (let dy = -a.radius; dy <= a.radius; dy++) {
+        for (let dx = -a.radius; dx <= a.radius; dx++) {
+          const x = a.x + dx;
+          const y = a.y + dy;
+          if (!inBounds(state, x, y)) continue;
+          const m = state.microbes[idx(state, x, y)];
+          if (m) m.genome = mutate(m.genome, rng);
+        }
+      }
     }
   }
+  if (rng) state.rngState = rng.state();
 }
 
 export function population(state: WorldState): number {
