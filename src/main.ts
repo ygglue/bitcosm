@@ -6,6 +6,7 @@ import { pointerToActions } from './input/pointerTools';
 import { fillColorBuffer } from './render/colorBuffer';
 import { GlRenderer } from './render/glRenderer';
 import type { Genome } from './sim/types';
+import App from './ui/App.svelte';
 
 const WORLD_W = 256;
 const WORLD_H = 256;
@@ -104,6 +105,8 @@ declare global {
   }
 }
 window.__bitcosm = { engine, stats: () => worldStats(engine.world) };
+
+new App({ target: document.getElementById('hud') as HTMLElement });
 
 let last = performance.now();
 function frame(now: number): void {

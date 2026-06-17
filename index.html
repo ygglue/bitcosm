@@ -6,15 +6,20 @@
     <title>Bitcosm — sandbox</title>
     <style>
       html, body { margin: 0; height: 100%; background: #0b0f0c; color: #cfe; font-family: monospace; }
-      #wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px; }
-      #world { display: block; width: 800px; height: 600px; image-rendering: pixelated; border: 1px solid #243; touch-action: none; }
-      #notice { display: none; max-width: 800px; color: #f99; }
+      #wrap { display: flex; justify-content: center; padding: 12px; }
+      #stage { position: relative; width: 800px; height: 600px; }
+      #world { position: absolute; inset: 0; width: 800px; height: 600px; image-rendering: pixelated; border: 1px solid #243; touch-action: none; }
+      #hud { position: absolute; inset: 0; }
+      #notice { display: none; }
     </style>
   </head>
   <body>
     <div id="wrap">
-      <canvas id="world"></canvas>
-      <div id="notice"></div>
+      <div id="stage">
+        <canvas id="world"></canvas>
+        <div id="hud"></div>
+        <div id="notice"></div>
+      </div>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
