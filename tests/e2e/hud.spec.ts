@@ -62,3 +62,31 @@ test('an over-budget genome turns the budget meter red', async ({ page }) => {
   await page.locator('[data-trait="reproThreshold"]').fill('0');
   await expect(page.locator('[data-budget]')).toHaveClass(/over/);
 });
+
+test('pause freezes the tick and step advances exactly one', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForFunction(() => {
+    const w = window as unknown as { __bitcosm?: { stats: () => { tick: number } } };
+    return !!w.__bitcosm && w.__bitcosm.stats().tick > 5;
+  }, { timeout: 10_000 });
+
+  await page.locator('[data-action="toggle-pause"]').click();
+  // Read tick, wait, confirm it did not advance while paused.
+  const t1 = await page.evaluate(() => (window as any).__bitcosm.stats().tick);
+  await page.waitForTimeout(300);
+  const t2 = await page.evaluate(() => (window as any).__bitcosm.stats().tick);
+  expect(t2).toBe(t1);
+
+  // One step advances by exactly one tick.
+  await page.locator('[data-action="step"]').click();
+  const t3 = await page.evaluate(() => (window as any).__bitcosm.stats().tick);
+  expect(t3).toBe(t1 + 1);
+});
+
+test('stats panel shows the live tick', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForFunction(() => {
+    const el = document.querySelector('[data-stats-tick]');
+    return !!el && Number(el.textContent) > 10;
+  }, { timeout: 10_000 });
+});
